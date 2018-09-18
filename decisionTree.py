@@ -2,13 +2,14 @@
 import operator
 from math import log
 import time
+import random
 
 
 def createDataSet():    # 创造示例数据
     dataSet = []
     labels = ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s0']  #两个特征
 
-    fr = open('D:\\Second_2\\KNN\\traindata')
+    fr = open('D:\\Second_2\\KNN\\traindata1.txt')
     for line in fr.readlines():
         line.strip()
         temp = list(map(float, line.split(' ')))
@@ -98,16 +99,46 @@ def createTree(dataSet, labels):
 def classify(inputTree,featNames,testVec):
 
     firstStr = inputTree.keys()[0]  #当前树的根节点的特征名称
-
+    # print "firstStr: ", firstStr
     secondDict = inputTree[firstStr]  #根节点的所有子节点
-
+    # print secondDict
     featIndex = featNames.index(firstStr)  #找到根节点特征对应的下标
+    # print "featIndex: ", featIndex
     key = testVec[featIndex]  #找出待测数据的特征值
-    valueOfFeat = secondDict[key]  #拿这个特征值在根节点的子节点中查找，看它是不是叶节点
+    # print "key: ", key
+    if secondDict.has_key(key):
+        valueOfFeat = secondDict[key]  #拿这个特征值在根节点的子节点中查找，看它是不是叶节点
+    else:
+        return random.randint(0, len(featNames))
+    # print "it's not feat"
     if isinstance(valueOfFeat, dict):  #如果不是叶节点
         classLabel = classify(valueOfFeat, featNames, testVec)  #递归地进入下一层节点
     else: classLabel = valueOfFeat  #如果是叶节点：确定待测数据的分类
     return classLabel
+
+
+def testClassify(inputTree):
+    dataSet = []
+    labels = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's0']  # 两个特征
+    # realResult = ['3', '3', '4', '6', '1', '6', '5', '6', '5', '6', '5']
+    realResult = []
+
+    fr = open('D:\\Second_2\\KNN\\testdata_tree')
+    for line in fr.readlines():
+        line.strip()
+        temp = list(map(float, line.split(' ')))
+        # print temp
+        realResult.append(temp[len(temp)-1])
+        del temp[(len(temp) - 1)]
+        # print temp
+        dataSet.append(classify(inputTree, labels, temp))
+    print dataSet
+    print realResult
+    count = 0
+    for index in range(len(dataSet)):
+        if dataSet[index] == realResult[index]:
+            count += 1
+    print float(count)/float(len(dataSet))
 
 
 def main():
@@ -117,8 +148,9 @@ def main():
     myTree = createTree(data, label)
     t2 = time.clock()
     print myTree
-    print 'execute for ', t2 - t1
-    print classify(myTree, label, [142, 221, 23, 72, 7, 5, 10, 0, 0, 12])
+    # print 'execute for ', t2 - t1
+    # print classify(myTree, label, [142, 221, 23, 72, 7, 5, 10, 0, 0, 12])
+    testClassify(myTree)
 
 
 if __name__ == '__main__':
